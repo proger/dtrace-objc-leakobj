@@ -1,0 +1,12 @@
+{%- macro arglist(args, typed=True) -%}
+{%- endmacro %}
+
+provider {{ leakname }} {
+{%- for name, args in probes %}
+	probe {{ name }}({% for _ in args %}const char *{% if not loop.last %}, {% endif %}{% endfor %});
+{%- endfor %}
+};
+
+{#
+ # vim: ft=jinja cin ts=4 sw=4
+ #}

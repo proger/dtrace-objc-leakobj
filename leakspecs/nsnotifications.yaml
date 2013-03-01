@@ -1,0 +1,15 @@
+notification__post:
+    args: [arg0, arg2]
+    methods:
+        NSNotificationCenter:
+            - name: "-postNotification:"
+              rtype: void
+              args: [id]
+            - name: "-postNotificationName:object:"
+              rtype: void
+              args: [id, id]
+            - name: "-postNotificationName:object:userInfo:"
+              rtype: void
+              args: [id, id, id]
+
+# vim: et sts=4 sw=4 cin

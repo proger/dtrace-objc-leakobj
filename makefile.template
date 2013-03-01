@@ -1,0 +1,23 @@
+HOOK=		{{ leakname }}
+PROVIDER=	{{ leakname }}.provider
+SCRIPT=		{{ leakname }}.lldb
+
+$(HOOK).dylib: $(HOOK).m $(PROVIDER).h
+	clang -framework Foundation -shared -flat_namespace $< -o $@
+
+$(PROVIDER).h: $(PROVIDER).d
+	dtrace -h -s $<
+
+clean:
+	rm -f $(HOOK).dylib $(PROVIDER).h
+
+apply:
+	@test "$(PID)" -ge 1 2>/dev/null || (echo error: specify PID=; false)
+	cat $(SCRIPT) | lldb-run $(PID)	# lldb-run is in https://github.com/proger/darwinkit
+	sudo dtrace -m $(HOOK).dylib -l
+
+.PHONY: clean apply
+
+{#
+ # vim: ft=jinja
+ #}

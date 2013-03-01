@@ -1,0 +1,58 @@
+#import <Foundation/Foundation.h>
+#import <objc/runtime.h>
+
+#include "{{ leakname }}.provider.h"
+
+{%- macro arglist(args, typed=True) -%}
+{% for type in args -%}
+{% if typed %}{{ type }}{% endif %} arg{{ loop.index0 + 2 }}{% if not loop.last %}, {% endif %}
+{%- endfor %}
+{%- endmacro %}
+
+{%- macro imphook(hook) -%}
+static IMP original$${{ hook.func }};
+
+static {{ hook.rtype }}
+newimp$${{ hook.func }}(id arg0, SEL arg1, {{ arglist(hook.args) }})
+{
+{% for probe, probeargs in hook.probes.items() %}
+	if ({{ probe }}_ENABLED()) {
+		{{ probe }}(
+			{% for arg in probeargs -%}
+			[[{{ arg }} description] UTF8String]{% if not loop.last %}, {% endif %}
+			{%- endfor %}
+		);
+	}
+{%- endfor %}
+
+	{% if hook.rtype != "void" %}return{% endif %} original$${{ hook.func }}(arg0, arg1, {{ arglist(hook.args, typed=False) }});
+}
+
+{%- endmacro %}
+
+{% macro impreplace(cls, method, func) %}
+	{
+		Class class = objc_getClass("{{ cls }}");
+		SEL selector = sel_getUid("{{ method }}");
+		
+		Method method = class_getInstanceMethod(class, selector);
+		original$${{ func }} = method_getImplementation(method);
+		method_setImplementation(method, (IMP)newimp$${{ func }});
+	}
+{%- endmacro %}
+
+{% for hook in hooks %}
+{{ imphook(hook) }}
+{% endfor %}
+
+void
+hook_{{ leakname }}_apply(void)
+{
+{% for hook in hooks -%}
+{{ impreplace(hook.cls, hook.method, hook.func) }}
+{%- endfor %}
+}
+
+{#
+ # vim: ft=jinja cin ts=4 sw=4
+ #}
