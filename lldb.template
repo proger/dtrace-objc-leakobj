@@ -1,5 +1,5 @@
 expr (void*)dlopen("{{'{{'}} PWD {{'}}'}}/{{ leakname }}.dylib", 0x2|0x8) {# RTLD_NOW|RTLD_GLOBAL #}
-expr (void)leak_{{ leakname }}_apply()
+expr (void)hook_{{ leakname }}_apply()
 
 {#
  # vim: ft=jinja
