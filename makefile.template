@@ -2,8 +2,27 @@ HOOK=		{{ leakname }}
 PROVIDER=	{{ leakname }}.provider
 SCRIPT=		{{ leakname }}.lldb
 
+PLATFORM_NAME = iPhoneSimulator
+ARCH = i386
+SDK_VERSION = 7.0
+
+XCODE = /Applications/Xcode.app
+SDK_NAME = $(PLATFORM_NAME)$(SDK_VERSION)
+PLAT = $(XCODE)/Contents/Developer/Platforms/$(PLATFORM_NAME).platform
+SDK = /Developer/SDKs/$(SDK_NAME).sdk
+TOOLCHAIN = $(XCODE)/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
+OCAMLBINDIR = $(OCAMLDIR)/bin/
+
+CC = $(TOOLCHAIN)/usr/bin/clang
+
+OBJCFLAGS = -arch i386 -fobjc-link-runtime -Xlinker -no_implicit_dylibs \
+	-mios-simulator-version-min=$(SDK_VERSION) \
+	-Xlinker -objc_abi_version -Xlinker 2 -ObjC -Wl,-no_compact_unwind \
+	-Wl,-objc_abi_version,2 -Wl,-no_pie \
+	-isysroot $(PLAT)$(SDK)
+
 $(HOOK).dylib: $(HOOK).m $(PROVIDER).h
-	clang -framework Foundation -shared -flat_namespace $< -o $@
+	$(CC) $(OBJCFLAGS) -shared -flat_namespace $< -o $@
 
 $(PROVIDER).h: $(PROVIDER).d
 	dtrace -h -s $<
