@@ -1,6 +1,6 @@
 PID ?= $(shell pgrep -f clojure.main)
 
-nsnotifications:
+nsnotifications nsobject:
 	rm -rf leaks
 	python leakexpand.py leakspecs/$@.yaml
 	make -C leaks/$@

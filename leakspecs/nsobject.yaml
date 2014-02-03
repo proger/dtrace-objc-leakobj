@@ -1,0 +1,9 @@
+perform__sel__with__object:
+    args: [arg0, arg3]
+    methods:
+        NSObject:
+            - name: "-performSelectorOnMainThread:withObject:waitUntilDone:"
+              rtype: void
+              args: [SEL, id, BOOL]
+
+# vim: et sts=4 sw=4 cin
